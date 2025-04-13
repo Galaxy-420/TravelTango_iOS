@@ -11,7 +11,8 @@ import SwiftUI
 struct TravelTangoApp: App {
     var body: some Scene {
         WindowGroup {
-            SignInView() // Start from Sign In
+            ForgotPasswordRequestView()
+            // 🚀 You can also change this to SignInView() or DashboardView() later
         }
     }
 }

@@ -1,12 +1,22 @@
+//
+//  ResetPasswordView.swift
+//  TravelTango
+//
+//  Created by Damsara Samarakoon on 2025-04-13.
+//
+
 import SwiftUI
 
-struct SignInView: View {
-    @State private var email = ""
+struct ResetPasswordView: View {
     @State private var password = ""
+    @State private var confirmPassword = ""
     @State private var isPasswordVisible = false
+    @State private var isConfirmPasswordVisible = false
+    @State private var showSuccessPopup = false
+    @State private var errorMessage = ""
 
     var isFormValid: Bool {
-        return !email.isEmpty && !password.isEmpty
+        password.count >= 8 && password == confirmPassword
     }
 
     var body: some View {
@@ -14,31 +24,23 @@ struct SignInView: View {
             VStack(spacing: 20) {
                 Spacer()
 
-                // Logo
                 Image(systemName: "airplane.circle.fill")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
                     .foregroundColor(.travelTangoBlue)
-                    .padding(.bottom, 10)
 
-                // Title
-                Text("Sign In")
+                Text("Set New Password")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                     .foregroundColor(.travelTangoBlue)
 
                 VStack(spacing: 15) {
-                    TextField("Email Address", text: $email)
-                        .textFieldStyle(.roundedBorder)
-                        .keyboardType(.emailAddress)
-                        .autocapitalization(.none)
-
                     HStack {
                         if isPasswordVisible {
-                            TextField("Password", text: $password)
+                            TextField("Enter new password", text: $password)
                         } else {
-                            SecureField("Password", text: $password)
+                            SecureField("Enter new password", text: $password)
                         }
                         Button(action: { isPasswordVisible.toggle() }) {
                             Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
@@ -48,14 +50,17 @@ struct SignInView: View {
                     .textFieldStyle(.roundedBorder)
 
                     HStack {
-                        Spacer()
-                        NavigationLink(destination: ForgotPasswordRequestView()) {
-                            Text("Forgot Password?")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
+                        if isConfirmPasswordVisible {
+                            TextField("Re-enter password", text: $confirmPassword)
+                        } else {
+                            SecureField("Re-enter password", text: $confirmPassword)
                         }
-                        .padding(.trailing, 30)
+                        Button(action: { isConfirmPasswordVisible.toggle() }) {
+                            Image(systemName: isConfirmPasswordVisible ? "eye.slash" : "eye")
+                                .foregroundColor(.gray)
+                        }
                     }
+                    .textFieldStyle(.roundedBorder)
                 }
                 .padding()
                 .background(Color.white)
@@ -63,11 +68,23 @@ struct SignInView: View {
                 .shadow(color: .gray.opacity(0.2), radius: 10)
                 .padding(.horizontal)
 
-                // Sign In Button
+                if !errorMessage.isEmpty {
+                    Text(errorMessage)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                }
+
+                Spacer()
+
                 Button(action: {
-                    print("Sign In button tapped!")
+                    if password != confirmPassword {
+                        errorMessage = "Passwords do not match!"
+                    } else {
+                        errorMessage = ""
+                        showSuccessPopup = true
+                    }
                 }) {
-                    Text("Sign In")
+                    Text("Update Password")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -78,32 +95,17 @@ struct SignInView: View {
                 }
                 .disabled(!isFormValid)
 
-                // Social Signin Buttons
-                VStack(spacing: 10) {
-                    SocialLoginButton(imageName: "globe", text: "Sign In with Google", backgroundColor: .white, foregroundColor: .black)
-                    SocialLoginButton(imageName: "applelogo", text: "Sign In with Apple", backgroundColor: .black, foregroundColor: .white)
-                }
-
-                // Don't have an account
-                HStack {
-                    Text("Don't have an account?")
-                    NavigationLink(destination: SignUpView()) {
-                        Text("Sign Up")
-                            .fontWeight(.bold)
-                            .foregroundColor(.travelTangoBlue)
-                    }
-                }
-                .font(.subheadline)
-                .padding(.top, 10)
-
                 Spacer()
             }
             .background(Color(UIColor.systemGroupedBackground))
             .ignoresSafeArea()
+            .sheet(isPresented: $showSuccessPopup) {
+                SuccessPopupView()
+            }
         }
     }
 }
 
 #Preview {
-    SignInView()
+    ResetPasswordView()
 }

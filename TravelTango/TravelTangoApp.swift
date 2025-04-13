@@ -11,7 +11,7 @@ import SwiftUI
 struct TravelTangoApp: App {
     var body: some Scene {
         WindowGroup {
-            SignInView() // Start from Sign In
+            MainTabView()
         }
     }
 }

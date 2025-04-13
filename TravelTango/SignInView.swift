@@ -3,6 +3,7 @@ import SwiftUI
 struct SignInView: View {
     @State private var email = ""
     @State private var password = ""
+    @State private var isPasswordVisible = false
 
     var isFormValid: Bool {
         return !email.isEmpty && !password.isEmpty
@@ -11,7 +12,6 @@ struct SignInView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 20) {
-
                 Spacer()
 
                 // Logo
@@ -19,24 +19,33 @@ struct SignInView: View {
                     .resizable()
                     .scaledToFit()
                     .frame(width: 100, height: 100)
-                    .foregroundColor(Color.blue)
+                    .foregroundColor(.travelTangoBlue)
+                    .padding(.bottom, 10)
 
                 // Title
                 Text("Sign In")
                     .font(.largeTitle)
                     .fontWeight(.bold)
+                    .foregroundColor(.travelTangoBlue)
 
-                Spacer().frame(height: 20)
-
-                // Form
-                Group {
+                VStack(spacing: 15) {
                     TextField("Email Address", text: $email)
                         .textFieldStyle(.roundedBorder)
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
 
-                    SecureField("Password", text: $password)
-                        .textFieldStyle(.roundedBorder)
+                    HStack {
+                        if isPasswordVisible {
+                            TextField("Password", text: $password)
+                        } else {
+                            SecureField("Password", text: $password)
+                        }
+                        Button(action: { isPasswordVisible.toggle() }) {
+                            Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
+                                .foregroundColor(.gray)
+                        }
+                    }
+                    .textFieldStyle(.roundedBorder)
 
                     HStack {
                         Spacer()
@@ -48,6 +57,10 @@ struct SignInView: View {
                         .padding(.trailing, 30)
                     }
                 }
+                .padding()
+                .background(Color.white)
+                .cornerRadius(16)
+                .shadow(color: .gray.opacity(0.2), radius: 10)
                 .padding(.horizontal)
 
                 // Sign In Button
@@ -59,65 +72,29 @@ struct SignInView: View {
                         .foregroundColor(.white)
                         .padding()
                         .frame(maxWidth: .infinity)
-                        .background(isFormValid ? Color.blue : Color.gray)
+                        .background(isFormValid ? Color.travelTangoBlue : Color.gray)
                         .cornerRadius(12)
                         .padding(.horizontal)
                 }
                 .disabled(!isFormValid)
 
-                Spacer().frame(height: 20)
-
-                // Or Sign In with
+                // Social Signin Buttons
                 VStack(spacing: 10) {
-                    Button(action: {
-                        print("Sign In with Google tapped")
-                    }) {
-                        HStack {
-                            Image(systemName: "globe")
-                            Text("Sign In with Google")
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundColor(.black)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.white)
-                        .cornerRadius(12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12)
-                                .stroke(Color.gray.opacity(0.5), lineWidth: 1)
-                        )
-                        .padding(.horizontal)
-                    }
-
-                    Button(action: {
-                        print("Sign In with Apple tapped")
-                    }) {
-                        HStack {
-                            Image(systemName: "applelogo")
-                            Text("Sign In with Apple")
-                        }
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.black)
-                        .cornerRadius(12)
-                        .padding(.horizontal)
-                    }
+                    SocialLoginButton(imageName: "globe", text: "Sign In with Google", backgroundColor: .white, foregroundColor: .black)
+                    SocialLoginButton(imageName: "applelogo", text: "Sign In with Apple", backgroundColor: .black, foregroundColor: .white)
                 }
 
-                Spacer().frame(height: 20)
-
-                // Link to Sign Up
+                // Don't have an account
                 HStack {
                     Text("Don't have an account?")
                     NavigationLink(destination: SignUpView()) {
                         Text("Sign Up")
                             .fontWeight(.bold)
-                            .foregroundColor(.blue)
+                            .foregroundColor(.travelTangoBlue)
                     }
                 }
                 .font(.subheadline)
+                .padding(.top, 10)
 
                 Spacer()
             }

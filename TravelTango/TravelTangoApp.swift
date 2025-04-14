@@ -12,6 +12,7 @@ struct TravelTangoApp: App {
     var body: some Scene {
         WindowGroup {
             MainTabView()
+            // 🚀 Later you can change MainTabView() to DashboardView() or Authentication Screens
         }
     }
 }

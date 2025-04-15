@@ -3,9 +3,9 @@ import SwiftUI
 struct NewTripView: View {
     @Environment(\.dismiss) var dismiss
     @State private var name: String = ""
-    @State private var locations: [SelectedLocation] = []
+    @State private var locations: [TripLocation1] = []
 
-    var onSave: (String, [SelectedLocation]) -> Void
+    var onSave: (String, [TripLocation1]) -> Void
 
     var body: some View {
         NavigationStack {
@@ -15,7 +15,7 @@ struct NewTripView: View {
                     .padding(.horizontal)
 
                 Button("Add Sample Location") {
-                    let sample = SelectedLocation(name: "Colombo", latitude: 6.9271, longitude: 79.8612)
+                    let sample = TripLocation1(name: "Colombo", latitude: 6.9271, longitude: 79.8612)
                     locations.append(sample)
                 }
                 .buttonStyle(.bordered)

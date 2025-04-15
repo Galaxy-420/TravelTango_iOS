@@ -3,32 +3,26 @@ import MapKit
 
 struct BottomSheetAddStopsView: View {
     @Environment(\.dismiss) var dismiss
-    @Binding var selectedLocations: [SelectedLocation]
-
-    init(selectedLocations: Binding<[SelectedLocation]>) {
-        self._selectedLocations = selectedLocations
-    }
+    @Binding var selectedLocations: [TripLocation1]
 
     @State private var searchText = ""
     @State private var searchResults: [MKLocalSearchCompletion] = []
+    @State private var selectedStops: [TripLocation1] = []
 
-    private var searchCompleter = MKLocalSearchCompleter()
-    @State private var selectedStops: [SelectedLocation] = []
+    @State private var searchCompleter = MKLocalSearchCompleter()
+    @StateObject private var completerDelegate = SearchCompleterDelegateSimple()
 
     var body: some View {
         VStack(spacing: 16) {
-            // Drag Bar
             RoundedRectangle(cornerRadius: 2)
                 .fill(Color.gray.opacity(0.5))
                 .frame(width: 40, height: 5)
                 .padding(.top, 10)
 
-            // Title
             Text("Plan Your Trip")
                 .font(.title2)
                 .fontWeight(.semibold)
 
-            // Search Bar
             TextField("Where to?", text: $searchText)
                 .padding()
                 .background(Color(.systemGray6))
@@ -38,16 +32,14 @@ struct BottomSheetAddStopsView: View {
                     searchCompleter.queryFragment = newValue
                 }
 
-            // Search Results
             if !searchResults.isEmpty {
                 List {
                     ForEach(searchResults, id: \.self) { result in
-                        Button(action: {
+                        Button {
                             selectPlace(result)
-                        }) {
+                        } label: {
                             VStack(alignment: .leading) {
-                                Text(result.title)
-                                    .font(.headline)
+                                Text(result.title).font(.headline)
                                 if !result.subtitle.isEmpty {
                                     Text(result.subtitle)
                                         .font(.subheadline)
@@ -60,24 +52,19 @@ struct BottomSheetAddStopsView: View {
                 .listStyle(PlainListStyle())
             }
 
-            // Selected Locations
             if !selectedStops.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(selectedStops.indices, id: \.self) { index in
-                        HStack {
-                            Text("\(index + 1). \(selectedStops[index].name)")
-                                .font(.subheadline)
-                            Spacer()
-                        }
-                        .padding(.horizontal)
+                        Text("\(index + 1). \(selectedStops[index].name)")
+                            .font(.subheadline)
+                            .padding(.horizontal)
                     }
                 }
-                .padding(.top, 10)
+                .padding(.top)
             }
 
             Spacer()
 
-            // Done Button
             Button(action: {
                 selectedLocations.append(contentsOf: selectedStops)
                 dismiss()
@@ -97,16 +84,11 @@ struct BottomSheetAddStopsView: View {
         .cornerRadius(25)
         .ignoresSafeArea()
         .onAppear {
-            configureCompleter()
+            completerDelegate.onUpdate = { results in
+                self.searchResults = results
+            }
+            searchCompleter.delegate = completerDelegate
         }
-    }
-
-    // MARK: - Helpers
-
-    private func configureCompleter() {
-        searchCompleter.delegate = SearchCompleterDelegateSimple(update: { results in
-            self.searchResults = results
-        })
     }
 
     private func selectPlace(_ completion: MKLocalSearchCompletion) {
@@ -115,33 +97,24 @@ struct BottomSheetAddStopsView: View {
         search.start { response, error in
             guard let mapItem = response?.mapItems.first else { return }
 
-            let location = SelectedLocation(
+            let selected = TripLocation1(
                 name: mapItem.name ?? completion.title,
-                coordinate: mapItem.placemark.coordinate
+                latitude: mapItem.placemark.coordinate.latitude,
+                longitude: mapItem.placemark.coordinate.longitude
             )
 
-            selectedStops.append(location)
+            selectedStops.append(selected)
             searchText = ""
             searchResults = []
         }
     }
 }
 
-// MARK: - Simplified SearchCompleterDelegate
-class SearchCompleterDelegateSimple: NSObject, MKLocalSearchCompleterDelegate {
-    var update: ([MKLocalSearchCompletion]) -> Void
-
-    init(update: @escaping ([MKLocalSearchCompletion]) -> Void) {
-        self.update = update
-    }
+// MARK: - Search Delegate
+class SearchCompleterDelegateSimple: NSObject, ObservableObject, MKLocalSearchCompleterDelegate {
+    var onUpdate: (([MKLocalSearchCompletion]) -> Void)?
 
     func completerDidUpdateResults(_ completer: MKLocalSearchCompleter) {
-        update(completer.results)
-    }
-}
-
-#Preview {
-    NavigationStack {
-        BottomSheetAddStopsView(selectedLocations: .constant([]))
+        onUpdate?(completer.results)
     }
 }

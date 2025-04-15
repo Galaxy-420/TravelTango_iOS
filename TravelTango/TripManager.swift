@@ -3,19 +3,20 @@ import SwiftUI
 
 class TripManager: ObservableObject {
     @Published var trips: [Trip] = []
-    @Published var currentTrip: Trip? = nil
+    @Published var currentTrip: Trip?
 
-    func addTrip(name: String, locations: [SelectedLocation]) {
-        let newTrip = Trip(name: name, locations: locations)
-        trips.append(newTrip)
-        currentTrip = newTrip
+    func addTrip(name: String, locations: [TripLocation1] = []) {
+        let trip = Trip(name: name, locations: locations)
+        trips.append(trip)
+        currentTrip = trip
     }
 
-    func updateTrip(id: UUID, name: String, locations: [SelectedLocation]) {
+    func updateTrip(id: UUID, name: String, locations: [TripLocation1]) {
         if let index = trips.firstIndex(where: { $0.id == id }) {
             trips[index].name = name
             trips[index].locations = locations
-            if trips[index].id == currentTrip?.id {
+
+            if currentTrip?.id == id {
                 currentTrip = trips[index]
             }
         }

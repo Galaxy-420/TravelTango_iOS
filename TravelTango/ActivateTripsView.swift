@@ -4,39 +4,43 @@ struct ActiveTripsView: View {
     @EnvironmentObject var tripManager: TripManager
 
     var body: some View {
-        List {
-            ForEach(tripManager.trips) { trip in
-                HStack {
-                    Text(trip.name)
-                    Spacer()
+        NavigationStack {
+            List {
+                Section(header: Text("Your Trips")) {
+                    ForEach(tripManager.trips) { trip in
+                        HStack {
+                            Text(trip.name)
+                                .fontWeight(tripManager.currentTrip?.id == trip.id ? .bold : .regular)
 
-                    // ✅ Looks like a toggle, acts like a toggle
-                    Button(action: {
-                        if tripManager.currentTrip?.id != trip.id {
-                            tripManager.switchTrip(id: trip.id)
+                            Spacer()
+
+                            // ✅ Acts like a toggle to switch active trip
+                            Button {
+                                tripManager.switchTrip(id: trip.id)
+                            } label: {
+                                Image(systemName: tripManager.currentTrip?.id == trip.id ? "checkmark.circle.fill" : "circle")
+                                    .foregroundColor(tripManager.currentTrip?.id == trip.id ? .blue : .gray)
+                            }
+                            .buttonStyle(.plain)
                         }
-                    }) {
-                        Image(systemName: tripManager.currentTrip?.id == trip.id ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(tripManager.currentTrip?.id == trip.id ? .blue : .gray)
-                    }
-                    .buttonStyle(.plain)
-                }
-                .swipeActions {
-                    Button(role: .destructive) {
-                        tripManager.deleteTrip(id: trip.id)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                tripManager.deleteTrip(id: trip.id)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
 
-                    Button {
-                        // TODO: Navigate to edit screen
-                        print("Edit tapped for trip: \(trip.name)")
-                    } label: {
-                        Label("Edit", systemImage: "pencil")
+                            Button {
+                                print("Edit tapped for trip: \(trip.name)")
+                                // You can later show an edit screen here
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                        }
                     }
                 }
             }
+            .navigationTitle("Active Trips")
         }
-        .navigationTitle("Active Trips")
     }
 }

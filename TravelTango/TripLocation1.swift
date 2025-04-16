@@ -1,6 +1,7 @@
 import Foundation
 import MapKit
 
+// ✅ This is TripLocation1 — represents a single stop/place inside a trip
 struct TripLocation1: Identifiable, Equatable {
     let id = UUID()
     let name: String
@@ -14,10 +15,4 @@ struct TripLocation1: Identifiable, Equatable {
     static func == (lhs: TripLocation1, rhs: TripLocation1) -> Bool {
         lhs.id == rhs.id
     }
-}
-
-struct Trip: Identifiable, Equatable {
-    let id = UUID()
-    var name: String
-    var locations: [TripLocation1]
 }

@@ -8,7 +8,7 @@ struct TripManagementView: View {
 
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(spacing: 16) {
                 // ➕ Create New Trip Button
                 Button(action: {
                     showingNewTripView = true
@@ -16,20 +16,24 @@ struct TripManagementView: View {
                     HStack {
                         Image(systemName: "plus.circle.fill")
                         Text("Create New Trip")
+                            .fontWeight(.semibold)
                     }
-                    .padding()
                     .frame(maxWidth: .infinity)
+                    .padding()
                     .background(Color.blue)
                     .foregroundColor(.white)
                     .cornerRadius(12)
                 }
-                .padding()
+                .padding(.horizontal)
+                .padding(.top)
 
-                // 📋 List of Existing Trips
+                // 📋 Trip List
                 if tripManager.trips.isEmpty {
+                    Spacer()
                     Text("No trips created yet.")
                         .foregroundColor(.gray)
                         .padding(.top, 40)
+                    Spacer()
                 } else {
                     List {
                         ForEach(tripManager.trips) { trip in
@@ -53,22 +57,26 @@ struct TripManagementView: View {
                                 tripManager.deleteTrip(id: trip.id)
                             }
                         }
+                        .swipeActions(edge: .leading) {
+                            Button {
+                                // TODO: Navigate to edit trip view
+                                print("Edit trip")
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.blue)
+                        }
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
-                                // Already handled by .onDelete
+                                // Handled by .onDelete
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
                         }
-                        .swipeActions(edge: .leading) {
-                            Button {
-                                // Future: Navigate to edit screen
-                            } label: {
-                                Label("Edit", systemImage: "pencil")
-                            }
-                        }
                     }
                 }
+
+                Spacer()
             }
             .navigationTitle("Manage Trips")
             .sheet(isPresented: $showingNewTripView) {

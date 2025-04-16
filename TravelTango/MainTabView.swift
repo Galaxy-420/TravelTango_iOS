@@ -2,14 +2,15 @@ import SwiftUI
 
 struct MainTabView: View {
     @EnvironmentObject var tripManager: TripManager
-    @State private var selectedTab = 2 // Dashboard is the default
+    @State private var selectedTab = 2 // Dashboard as default
 
     var body: some View {
         TabView(selection: $selectedTab) {
             
-            // Team Management
+            // 🧑‍🤝‍🧑 Team Management
             NavigationStack {
                 TeamManagementView()
+                    .environmentObject(tripManager)
             }
             .tabItem {
                 Image(systemName: "person.3.fill")
@@ -17,7 +18,7 @@ struct MainTabView: View {
             }
             .tag(0)
             
-            // Chat
+            // 💬 Group Chat
             NavigationStack {
                 GroupChatView()
             }
@@ -27,7 +28,7 @@ struct MainTabView: View {
             }
             .tag(1)
             
-            // Dashboard
+            // 🗺️ Dashboard (default tab)
             NavigationStack {
                 DashboardView()
                     .environmentObject(tripManager)
@@ -38,7 +39,7 @@ struct MainTabView: View {
             }
             .tag(2)
             
-            // Expenses
+            // 💳 Expenses
             NavigationStack {
                 ExpensesManagementView()
             }
@@ -48,7 +49,7 @@ struct MainTabView: View {
             }
             .tag(3)
             
-            // Profile
+            // 👤 User Profile
             NavigationStack {
                 UserProfileView()
             }

@@ -41,7 +41,7 @@ struct SuccessPopupView: View {
             .background(Color(UIColor.systemGroupedBackground))
             .ignoresSafeArea()
             .navigationDestination(isPresented: $goToSignIn) {
-                SignInView()
+                SignInView(isSignedIn: .constant(false)) // ✅ fix for navigation
             }
         }
     }

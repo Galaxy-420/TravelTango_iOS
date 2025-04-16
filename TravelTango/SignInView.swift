@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct SignInView: View {
+    @Binding var isSignedIn: Bool
+
     @State private var email = ""
     @State private var password = ""
     @State private var isPasswordVisible = false
@@ -35,10 +37,12 @@ struct SignInView: View {
                         .autocapitalization(.none)
 
                     HStack {
-                        if isPasswordVisible {
-                            TextField("Password", text: $password)
-                        } else {
-                            SecureField("Password", text: $password)
+                        Group {
+                            if isPasswordVisible {
+                                TextField("Password", text: $password)
+                            } else {
+                                SecureField("Password", text: $password)
+                            }
                         }
                         Button(action: { isPasswordVisible.toggle() }) {
                             Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
@@ -65,7 +69,7 @@ struct SignInView: View {
 
                 // Sign In Button
                 Button(action: {
-                    print("Sign In button tapped!")
+                    isSignedIn = true // ✅ Triggers DashboardView via TravelTangoApp
                 }) {
                     Text("Sign In")
                         .font(.headline)
@@ -78,13 +82,13 @@ struct SignInView: View {
                 }
                 .disabled(!isFormValid)
 
-                // Social Signin Buttons
+                // Social Sign-in Buttons
                 VStack(spacing: 10) {
                     SocialLoginButton(imageName: "globe", text: "Sign In with Google", backgroundColor: .white, foregroundColor: .black)
                     SocialLoginButton(imageName: "applelogo", text: "Sign In with Apple", backgroundColor: .black, foregroundColor: .white)
                 }
 
-                // Don't have an account
+                // Sign Up Prompt
                 HStack {
                     Text("Don't have an account?")
                     NavigationLink(destination: SignUpView()) {
@@ -98,12 +102,9 @@ struct SignInView: View {
 
                 Spacer()
             }
+            .padding(.top)
             .background(Color(UIColor.systemGroupedBackground))
             .ignoresSafeArea()
         }
     }
-}
-
-#Preview {
-    SignInView()
 }

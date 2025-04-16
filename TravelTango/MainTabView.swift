@@ -1,48 +1,62 @@
-//
-//  MainTabView.swift
-//  TravelTango
-//
-//  Created by Damsara Samarakoon on 2025-04-14.
-//
 import SwiftUI
 
 struct MainTabView: View {
+    @EnvironmentObject var tripManager: TripManager
+    @State private var selectedTab = 2 // Dashboard is the default
+
     var body: some View {
-        TabView {
-            TeamManagementView()
-                .tabItem {
-                    Image(systemName: "person.3.fill")
-                    Text("Team")
-                }
+        TabView(selection: $selectedTab) {
             
-            GroupChatView()
-                .tabItem {
-                    Image(systemName: "message.fill")
-                    Text("Chat")
-                }
+            // Team Management
+            NavigationStack {
+                TeamManagementView()
+            }
+            .tabItem {
+                Image(systemName: "person.3.fill")
+                Text("Team")
+            }
+            .tag(0)
             
-            DashboardView()
-                .tabItem {
-                    Image(systemName: "map.fill")
-                    Text("Dashboard")
-                }
+            // Chat
+            NavigationStack {
+                GroupChatView()
+            }
+            .tabItem {
+                Image(systemName: "message.fill")
+                Text("Chat")
+            }
+            .tag(1)
             
-            ExpensesManagementView()
-                .tabItem {
-                    Image(systemName: "creditcard.fill")
-                    Text("Expenses")
-                }
+            // Dashboard
+            NavigationStack {
+                DashboardView()
+                    .environmentObject(tripManager)
+            }
+            .tabItem {
+                Image(systemName: "map.fill")
+                Text("Dashboard")
+            }
+            .tag(2)
             
-            UserProfileView()
-                .tabItem {
-                    Image(systemName: "person.crop.circle.fill")
-                    Text("Profile")
-                }
+            // Expenses
+            NavigationStack {
+                ExpensesManagementView()
+            }
+            .tabItem {
+                Image(systemName: "creditcard.fill")
+                Text("Expenses")
+            }
+            .tag(3)
+            
+            // Profile
+            NavigationStack {
+                UserProfileView()
+            }
+            .tabItem {
+                Image(systemName: "person.crop.circle.fill")
+                Text("Profile")
+            }
+            .tag(4)
         }
     }
 }
-
-#Preview {
-    MainTabView()
-}
-

@@ -9,7 +9,10 @@ struct SignUpView: View {
     @State private var isConfirmPasswordVisible = false
 
     var isFormValid: Bool {
-        return !fullName.isEmpty && !email.isEmpty && !password.isEmpty && (password == confirmPassword)
+        !fullName.isEmpty &&
+        !email.isEmpty &&
+        !password.isEmpty &&
+        password == confirmPassword
     }
 
     var body: some View {
@@ -42,11 +45,14 @@ struct SignUpView: View {
                         .keyboardType(.emailAddress)
                         .autocapitalization(.none)
 
+                    // Password Field
                     HStack {
-                        if isPasswordVisible {
-                            TextField("Create Password", text: $password)
-                        } else {
-                            SecureField("Create Password", text: $password)
+                        Group {
+                            if isPasswordVisible {
+                                TextField("Create Password", text: $password)
+                            } else {
+                                SecureField("Create Password", text: $password)
+                            }
                         }
                         Button(action: { isPasswordVisible.toggle() }) {
                             Image(systemName: isPasswordVisible ? "eye.slash" : "eye")
@@ -55,11 +61,14 @@ struct SignUpView: View {
                     }
                     .textFieldStyle(.roundedBorder)
 
+                    // Confirm Password Field
                     HStack {
-                        if isConfirmPasswordVisible {
-                            TextField("Confirm Password", text: $confirmPassword)
-                        } else {
-                            SecureField("Confirm Password", text: $confirmPassword)
+                        Group {
+                            if isConfirmPasswordVisible {
+                                TextField("Confirm Password", text: $confirmPassword)
+                            } else {
+                                SecureField("Confirm Password", text: $confirmPassword)
+                            }
                         }
                         Button(action: { isConfirmPasswordVisible.toggle() }) {
                             Image(systemName: isConfirmPasswordVisible ? "eye.slash" : "eye")
@@ -76,7 +85,7 @@ struct SignUpView: View {
 
                 // Sign Up Button
                 Button(action: {
-                    print("Sign Up button tapped!")
+                    print("Sign Up button tapped!") // Replace with real logic
                 }) {
                     Text("Sign Up")
                         .font(.headline)
@@ -98,7 +107,7 @@ struct SignUpView: View {
                 // Already have an account
                 HStack {
                     Text("Already have an account?")
-                    NavigationLink(destination: SignInView()) {
+                    NavigationLink(destination: SignInView(isSignedIn: .constant(false))) {
                         Text("Sign In")
                             .fontWeight(.bold)
                             .foregroundColor(.travelTangoBlue)
@@ -113,37 +122,4 @@ struct SignUpView: View {
             .ignoresSafeArea()
         }
     }
-}
-
-struct SocialLoginButton: View {
-    var imageName: String
-    var text: String
-    var backgroundColor: Color
-    var foregroundColor: Color
-
-    var body: some View {
-        Button(action: {
-            print("\(text) tapped")
-        }) {
-            HStack {
-                Image(systemName: imageName)
-                Text(text)
-                    .fontWeight(.semibold)
-            }
-            .padding()
-            .frame(maxWidth: .infinity)
-            .background(backgroundColor)
-            .foregroundColor(foregroundColor)
-            .cornerRadius(12)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-            )
-            .padding(.horizontal)
-        }
-    }
-}
-
-#Preview {
-    SignUpView()
 }

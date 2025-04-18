@@ -1,7 +1,6 @@
 import Foundation
 import MapKit
 
-// ✅ This is TripLocation1 — represents a single stop/place inside a trip
 struct TripLocation1: Identifiable, Equatable {
     let id = UUID()
     let name: String

@@ -1,9 +1,3 @@
-//
-//  ChatMessage.swift
-//  TravelTango
-//
-//  Created by Damsara Samarakoon on 2025-04-17.
-//
 import Foundation
 
 struct ChatMessage: Identifiable, Hashable {
@@ -13,7 +7,13 @@ struct ChatMessage: Identifiable, Hashable {
     var timestamp: Date
     var type: MessageType
 
-    init(id: UUID = UUID(), senderID: UUID, content: String, type: MessageType = .text, timestamp: Date = Date()) {
+    init(
+        id: UUID = UUID(),
+        senderID: UUID,
+        content: String,
+        type: MessageType = .text,
+        timestamp: Date = Date()
+    ) {
         self.id = id
         self.senderID = senderID
         self.content = content
@@ -30,5 +30,3 @@ enum MessageType: String, Codable {
     case contact
     case audio
 }
-
-

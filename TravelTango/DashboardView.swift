@@ -103,8 +103,9 @@ struct DashboardView: View {
         }
 
         // Camera View
-        .navigationDestination(isPresented: $showingCameraPage) {
-            Text("AR Camera Page (coming soon)")
+        // Camera View Sheet or Fullscreen
+        .fullScreenCover(isPresented: $showingCameraPage) {
+            CameraARView()
         }
 
         // First-Time Trip Creation

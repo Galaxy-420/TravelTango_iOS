@@ -20,9 +20,14 @@ struct DashboardView: View {
 
             Map(coordinateRegion: $mapRegion, annotationItems: pins) { location in
                 MapAnnotation(coordinate: location.coordinate) {
-                    Circle()
-                        .fill(Color.red)
-                        .frame(width: 30, height: 30)
+                    Button(action: {
+                        tripManager.selectedLocation = location // now TripLocation1
+                        showingCameraPage = true
+                    }) {
+                        Circle()
+                            .fill(Color.red)
+                            .frame(width: 30, height: 30)
+                    }
                 }
             }
             .edgesIgnoringSafeArea(.bottom)

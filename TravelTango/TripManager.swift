@@ -4,6 +4,7 @@ import SwiftUI
 class TripManager: ObservableObject {
     @Published var trips: [Trip] = []
     @Published var currentTrip: Trip?
+    @Published var selectedLocation: TripLocation1? = nil
 
     // MARK: - Trip Management
 

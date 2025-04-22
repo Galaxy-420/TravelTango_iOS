@@ -12,5 +12,6 @@ struct TripLocation: Identifiable {
     let id = UUID()
     let coordinate: CLLocationCoordinate2D
     let title: String
+    let vrImageName: String // NEW
 }
 

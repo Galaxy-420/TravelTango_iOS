@@ -7,6 +7,10 @@ struct SignInView: View {
     @State private var password = ""
     @State private var isPasswordVisible = false
 
+    @State private var showToast = false
+    @State private var toastMessage = ""
+    @State private var isSuccess = false
+
     var isFormValid: Bool {
         return !email.isEmpty && !password.isEmpty
     }
@@ -68,9 +72,7 @@ struct SignInView: View {
                 .padding(.horizontal)
 
                 // Sign In Button
-                Button(action: {
-                    isSignedIn = true // ✅ Triggers DashboardView via TravelTangoApp
-                }) {
+                Button(action: signIn) {
                     Text("Sign In")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -105,6 +107,92 @@ struct SignInView: View {
             .padding(.top)
             .background(Color(UIColor.systemGroupedBackground))
             .ignoresSafeArea()
+            .overlay(
+                Group {
+                    if showToast {
+                        VStack {
+                            Spacer()
+                            Text(toastMessage)
+                                .padding()
+                                .background(isSuccess ? Color.green.opacity(0.9) : Color.red.opacity(0.9))
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                                .padding(.bottom, 50)
+                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
+                }
+            )
+        }
+    }
+
+    func signIn() {
+        guard let url = URL(string: "http://localhost:5001/api/auth/login") else {
+            showError("Invalid URL")
+            return
+        }
+
+        let body: [String: String] = [
+            "email": email,
+            "password": password
+        ]
+
+        guard let jsonData = try? JSONEncoder().encode(body) else {
+            showError("Failed to encode data")
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = jsonData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                showError("Request error: \(error.localizedDescription)")
+                return
+            }
+
+            guard let httpResponse = response as? HTTPURLResponse else {
+                showError("No response from server")
+                return
+            }
+
+            if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
+                DispatchQueue.main.async {
+                    isSignedIn = true // Successfully signed in
+                }
+                showSuccess("Signed in successfully!")
+            } else {
+                let statusCode = httpResponse.statusCode
+                showError("Failed to sign in (code: \(statusCode))")
+            }
+        }.resume()
+    }
+
+    func showError(_ message: String) {
+        DispatchQueue.main.async {
+            toastMessage = message
+            isSuccess = false
+            showToast = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    showToast = false
+                }
+            }
+        }
+    }
+
+    func showSuccess(_ message: String) {
+        DispatchQueue.main.async {
+            toastMessage = message
+            isSuccess = true
+            showToast = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    showToast = false
+                }
+            }
         }
     }
 }

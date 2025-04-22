@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AddExpenseTypeSheet: View {
-    @Environment(\.dismiss) var dismiss
+    var onSelect: (ExpenseType) -> Void
 
     var body: some View {
         VStack(spacing: 16) {
@@ -9,20 +9,30 @@ struct AddExpenseTypeSheet: View {
                 .font(.headline)
                 .padding(.top)
 
-            Group {
-                NavigationLink("Trip Budget Collection", destination: TripBudgetCollectionView())
-                NavigationLink("Trip Expenses", destination: TripExpensesView())
-                NavigationLink("Extra Expenses", destination: ExtraExpensesView())
-                NavigationLink("Remaining Payments", destination: RemainingPaymentsView())
+            VStack(spacing: 12) {
+                Button("Trip Budget Collection") {
+                    onSelect(.tripBudget)
+                }
+                .modifier(ExpenseButtonStyle())
+
+                Button("Trip Expenses") {
+                    onSelect(.tripExpense)
+                }
+                .modifier(ExpenseButtonStyle())
+
+                Button("Extra Expenses") {
+                    onSelect(.extraExpense)
+                }
+                .modifier(ExpenseButtonStyle())
+
+                Button("Remaining Payments") {
+                    onSelect(.remainingPayment)
+                }
+                .modifier(ExpenseButtonStyle())
             }
-            .foregroundColor(.white)
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(Color("DarkBlue"))
-            .cornerRadius(10)
 
             Button("Cancel") {
-                dismiss()
+                onSelect(.tripBudget) // fallback or no-op
             }
             .foregroundColor(.red)
             .padding(.top)
@@ -30,5 +40,16 @@ struct AddExpenseTypeSheet: View {
             Spacer()
         }
         .padding()
+    }
+}
+
+struct ExpenseButtonStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .foregroundColor(.white)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .background(Color("DarkBlue"))
+            .cornerRadius(10)
     }
 }

@@ -13,6 +13,11 @@ struct DashboardView: View {
     @State private var showingTripManagement = false
     @State private var showingCameraPage = false
     @State private var showingFirstTripScreen = false
+    @State private var showingVRView = false
+    @State private var selectedVRLocation: TripLocation1? = nil
+    @State private var isLoadingVR = true
+
+    
 
     var body: some View {
         ZStack(alignment: .top) {
@@ -21,8 +26,8 @@ struct DashboardView: View {
             Map(coordinateRegion: $mapRegion, annotationItems: pins) { location in
                 MapAnnotation(coordinate: location.coordinate) {
                     Button(action: {
-                        tripManager.selectedLocation = location // now TripLocation1
-                        showingCameraPage = true
+                        selectedVRLocation = location
+                        showingVRView = true
                     }) {
                         Circle()
                             .fill(Color.red)
@@ -107,8 +112,7 @@ struct DashboardView: View {
             }
         }
 
-        // Camera View
-        // Camera View Sheet or Fullscreen
+        // Camera View Fullscreen
         .fullScreenCover(isPresented: $showingCameraPage) {
             CameraARView()
         }
@@ -120,6 +124,24 @@ struct DashboardView: View {
                 showingFirstTripScreen = false
             }
         }
+
+        // VR View when tapping red pin
+        .sheet(isPresented: $showingVRView) {
+            ZStack {
+                Web360View(isLoading: $isLoadingVR)
+
+                if isLoadingVR {
+                    VStack {
+                        ProgressView()
+                        Text("Loading 360° View...")
+                            .foregroundColor(.gray)
+                            .padding(.top, 8)
+                    }
+                }
+            }
+        }
+
+
 
         // Navigation bar config
         .navigationTitle(tripManager.currentTrip?.name ?? "Dashboard")

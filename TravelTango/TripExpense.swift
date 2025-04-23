@@ -17,3 +17,5 @@ struct TripExpense: Identifiable, Hashable {
         self.category = category
     }
 }
+
+

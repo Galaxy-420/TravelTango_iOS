@@ -1,68 +1,60 @@
-//
-//  AddTripExpenseView.swift
-//  TravelTango
-//
-//  Created by Damsara Samarakoon on 2025-04-22.
-//
 import SwiftUI
 
 struct AddTripExpenseView: View {
     @Environment(\.dismiss) var dismiss
     @ObservedObject var viewModel: TripExpensesViewModel
 
-    @State private var date = Date()
-    @State private var expenseName = ""
-    @State private var personName = ""
-    @State private var amount = ""
-    @State private var selectedCategory = ""
-    
-    var existingExpense: TripExpense? = nil
+    @State private var expenseName: String = ""
+    @State private var personName: String = ""
+    @State private var amount: String = ""
+    @State private var date: Date = Date()
+    @State private var category: String = ""
+
+    var existingExpense: TripExpense?
 
     let categories = [
-        "Food", "Transport", "Accommodation", "Activity",
-        "Tickets", "Fuel", "Shopping", "Medical",
-        "Miscellaneous", "Other"
+        "Accommodation", "Transport", "Food", "Tickets",
+        "Fuel", "Entrance Fees", "Shopping", "Gifts",
+        "Miscellaneous", "Entertainment", "Other"
     ]
 
     var body: some View {
         NavigationStack {
             Form {
-                DatePicker("Date", selection: $date, displayedComponents: .date)
-
                 TextField("Expense Name", text: $expenseName)
                 TextField("Person Name", text: $personName)
                 TextField("Amount", text: $amount)
                     .keyboardType(.decimalPad)
-
-                Picker("Category", selection: $selectedCategory) {
+                DatePicker("Date", selection: $date, displayedComponents: .date)
+                Picker("Category", selection: $category) {
                     ForEach(categories, id: \.self) { category in
                         Text(category)
                     }
                 }
             }
-            .navigationTitle(existingExpense == nil ? "Add Trip Expense" : "Edit Trip Expense")
+            .navigationTitle(existingExpense == nil ? "Add Expense" : "Edit Expense")
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let finalAmount = Double(amount) ?? 0
+                        let expenseAmount = Double(amount) ?? 0.0
                         let expense = TripExpense(
                             id: existingExpense?.id ?? UUID(),
                             date: date,
                             expenseName: expenseName,
                             personName: personName,
-                            amount: finalAmount,
-                            category: selectedCategory
+                            amount: expenseAmount,
+                            category: category
                         )
 
                         if existingExpense != nil {
-                            viewModel.update(expense)
+                            viewModel.updateExpense(expense)
                         } else {
-                            viewModel.add(expense)
+                            viewModel.addExpense(expense)
                         }
 
                         dismiss()
                     }
-                    .disabled(expenseName.isEmpty || personName.isEmpty || amount.isEmpty || selectedCategory.isEmpty)
+                    .disabled(expenseName.isEmpty || personName.isEmpty || amount.isEmpty || category.isEmpty)
                 }
 
                 ToolbarItem(placement: .cancellationAction) {
@@ -71,16 +63,15 @@ struct AddTripExpenseView: View {
                     }
                 }
             }
-        }
-        .onAppear {
-            if let expense = existingExpense {
-                date = expense.date
-                expenseName = expense.expenseName
-                personName = expense.personName
-                amount = "\(expense.amount)"
-                selectedCategory = expense.category
+            .onAppear {
+                if let expense = existingExpense {
+                    expenseName = expense.expenseName
+                    personName = expense.personName
+                    amount = "\(expense.amount)"
+                    date = expense.date
+                    category = expense.category
+                }
             }
         }
     }
 }
-

@@ -8,5 +8,6 @@ import SwiftUI
 
 extension Color {
     static let travelTangoBlue = Color(red: 9/255, green: 29/255, blue: 72/255)
+    static let darkBlue = Color(red: 10/255, green: 40/255, blue: 100/255)
 }
 // mandakiniiiiiiiiiiiii

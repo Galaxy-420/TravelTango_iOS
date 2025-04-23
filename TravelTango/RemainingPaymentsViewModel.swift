@@ -8,7 +8,10 @@ import Foundation
 import SwiftUI
 
 class RemainingPaymentsViewModel: ObservableObject {
+    static let shared = RemainingPaymentsViewModel()
+    
     @Published var payments: [RemainingPayment] = []
+    
 
     var totalRemaining: Double {
         payments.reduce(0) { $0 + $1.amount }

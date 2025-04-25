@@ -5,6 +5,7 @@
 //  Created by Damsara Samarakoon on 2025-04-17.
 //
 import SwiftUI
+import UserNotifications
 
 struct GroupChatRoomView: View {
     @EnvironmentObject var tripManager: TripManager
@@ -95,6 +96,7 @@ struct GroupChatRoomView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             self.messages = group.messages
+            requestNotificationPermissions()
         }
     }
 
@@ -104,6 +106,41 @@ struct GroupChatRoomView: View {
         let newMessage = ChatMessage(senderID: UUID(), content: messageText, type: .text)
         messages.append(newMessage)
         messageText = ""
+
+        triggerNotification(for: newMessage)
+    }
+
+    // Request notification permissions
+    private func requestNotificationPermissions() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if let error = error {
+                print("Error requesting notification permissions: \(error)")
+            } else if granted {
+                print("Notification permissions granted.")
+            } else {
+                print("Notification permissions denied.")
+            }
+        }
+    }
+
+    // Trigger a local notification
+    private func triggerNotification(for message: ChatMessage) {
+        let content = UNMutableNotificationContent()
+        content.title = group.name
+        content.body = message.content
+        content.sound = .default
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString,
+            content: content,
+            trigger: nil // Immediate notification
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("Error scheduling notification: \(error)")
+            }
+        }
     }
 }
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import Firebase // Import Firebase
 import GoogleMaps // Import Google Maps
+import UserNotifications // Import UserNotifications
 
 @main
 struct TravelTangoApp: App {
@@ -17,9 +18,12 @@ struct TravelTangoApp: App {
     init() {
         // Configure Firebase
         FirebaseApp.configure()
-        
+
         // Provide Google Maps API Key
         GMSServices.provideAPIKey("AIzaSyD9zEfifIQQFXfw2ajG1XSdQukNRYWWsbc") // Replace with your actual API key
+
+        // Set up notification delegate
+        UNUserNotificationCenter.current().delegate = NotificationDelegate()
     }
 
     var body: some Scene {
@@ -41,6 +45,20 @@ struct TravelTangoApp: App {
                 }
             }
         }
+    }
+}
+
+// Notification Delegate
+class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Show notification as a banner even when the app is in the foreground
+        completionHandler([.banner, .sound])
+    }
+
+    func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
+        // Handle notification tap
+        print("Notification tapped: \(response.notification.request.content.body)")
+        completionHandler()
     }
 }
 

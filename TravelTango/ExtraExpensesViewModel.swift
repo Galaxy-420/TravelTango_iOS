@@ -1,9 +1,7 @@
 import Foundation
 
 class ExtraExpensesViewModel: ObservableObject {
-    static let shared = ExtraExpensesViewModel()
     @Published var expenses: [ExtraExpense] = []
-
 
     func add(_ expense: ExtraExpense) {
         expenses.append(expense)

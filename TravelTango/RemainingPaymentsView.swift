@@ -1,68 +1,94 @@
-//
-//  RemainingPaymentsView.swift
-//  TravelTango
-//
-//  Created by Damsara Samarakoon on 2025-04-22.
-//
 import SwiftUI
 
 struct RemainingPaymentsView: View {
     @StateObject private var viewModel = RemainingPaymentsViewModel()
-    @State private var showingAdd = false
-    @State private var editingPayment: RemainingPayment? = nil
+    @State private var showForm = false
+    @State private var selectedPayment: RemainingPayment?
 
     var body: some View {
-        VStack {
-            HStack {
-                Text("Total Remaining: LKR \(viewModel.totalRemaining, specifier: "%.2f")")
-                    .font(.headline)
-                    .padding()
-                Spacer()
-            }
+        NavigationStack {
+            VStack(spacing: 10) {
+                HStack(spacing: 16) {
+                    SummaryCard(title: "To Send", amount: viewModel.totalToGive, color: .yellow)
+                    SummaryCard(title: "To Receive", amount: viewModel.totalToReceive, color: .green)
+                }
+                .padding()
 
-            List {
-                ForEach(viewModel.payments) { payment in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(payment.personName)
-                                .font(.headline)
-                            Text(payment.description)
-                                .font(.subheadline)
-                        }
-                        Spacer()
-                        Text("LKR \(payment.amount, specifier: "%.2f")")
-                    }
-                    .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Edit") {
-                            editingPayment = payment
-                        }
-                        .tint(.blue)
+                Button("➕ Add Remaining Payment") {
+                    selectedPayment = nil
+                    showForm = true
+                }
+                .padding()
+                .frame(maxWidth: .infinity)
+                .background(Color.blue)
+                .foregroundColor(.white)
+                .cornerRadius(10)
+                .padding(.horizontal)
 
-                        Button("Delete", role: .destructive) {
-                            viewModel.delete(payment)
+                if viewModel.payments.isEmpty {
+                    Spacer()
+                    Text("No remaining payments added yet.")
+                        .foregroundColor(.gray)
+                    Spacer()
+                } else {
+                    List {
+                        ForEach(viewModel.payments) { payment in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(payment.expenseName)
+                                        .font(.headline)
+                                    Text("\(payment.type.rawValue) - \(payment.personName)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text("LKR \(payment.amount, specifier: "%.2f")")
+                                    .fontWeight(.bold)
+                            }
+                            .swipeActions {
+                                Button {
+                                    selectedPayment = payment
+                                    showForm = true
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.orange)
+
+                                Button(role: .destructive) {
+                                    viewModel.delete(payment)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 }
             }
-        }
-        .navigationTitle("Remaining Payments")
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                Button(action: {
-                    showingAdd = true
-                }) {
-                    Image(systemName: "plus.circle.fill")
-                        .foregroundColor(Color("DarkBlue"))
-                        .font(.title2)
-                }
+            .navigationTitle("Remaining Payments")
+            .sheet(isPresented: $showForm) {
+                RemainingPaymentFormView(viewModel: viewModel, existingPayment: $selectedPayment)
             }
         }
-        .sheet(isPresented: $showingAdd) {
-            AddRemainingPaymentView(viewModel: viewModel)
-        }
-        .sheet(item: $editingPayment) { payment in
-            AddRemainingPaymentView(viewModel: viewModel, existingPayment: payment)
+    }
+
+    struct SummaryCard: View {
+        var title: String
+        var amount: Double
+        var color: Color
+
+        var body: some View {
+            VStack(alignment: .leading) {
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+                Text("LKR \(amount, specifier: "%.2f")")
+                    .font(.title2.bold())
+                    .foregroundColor(.white)
+            }
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(color)
+            .cornerRadius(12)
         }
     }
 }
-

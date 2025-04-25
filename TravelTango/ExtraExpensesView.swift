@@ -2,75 +2,89 @@ import SwiftUI
 
 struct ExtraExpensesView: View {
     @StateObject private var viewModel = ExtraExpensesViewModel()
-    @State private var showAddExpense = false
+    @State private var showForm = false
     @State private var selectedExpense: ExtraExpense?
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 16) {
-                // Total Extra Expenses
-                VStack {
-                    Text("Total Extra Expenses")
-                        .font(.headline)
-                    Text("\(viewModel.totalAmount, specifier: "%.2f") LKR")
-                        .font(.largeTitle)
-                        .bold()
-                        .foregroundColor(.red)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding(.horizontal)
+            VStack {
+                // Top Box Summary
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("Total Extra Spent")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.8))
+                        Text("LKR \(viewModel.totalAmount, specifier: "%.2f")")
+                            .font(.title.bold())
+                            .foregroundColor(.white)
+                    }
+                    .padding()
+                    .background(Color.red)
+                    .cornerRadius(12)
+                    .shadow(radius: 4)
 
-                // Add Expense Button
+                    Spacer()
+                }
+                .padding([.horizontal, .top])
+
+                // Add New Button
                 Button(action: {
-                    showAddExpense = true
+                    selectedExpense = nil
+                    showForm = true
                 }) {
-                    Text("Add Extra Expense")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.red)
+                    Text("➕ Add New")
                         .foregroundColor(.white)
-                        .cornerRadius(12)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
                 .padding(.horizontal)
 
-                // Expense List
-                List {
-                    ForEach(viewModel.expenses.sorted(by: { $0.date > $1.date })) { expense in
-                        VStack(alignment: .leading) {
-                            Text(expense.expenseName)
-                                .font(.headline)
-                            Text("Person: \(expense.personName)")
-                                .font(.subheadline)
-                            Text("Amount: \(expense.amount, specifier: "%.2f") LKR")
-                                .font(.subheadline)
-                            Text("Date: \(expense.date.formatted(date: .abbreviated, time: .omitted))")
-                                .font(.caption)
-                                .foregroundColor(.gray)
-                        }
-                        .padding(.vertical, 4)
-                        .onTapGesture {
-                            selectedExpense = expense
-                        }
-                    }
-                    .onDelete { indexSet in
-                        for index in indexSet {
-                            let sorted = viewModel.expenses.sorted(by: { $0.date > $1.date })
-                            let toDelete = sorted[index]
-                            viewModel.delete(toDelete)
+                // List
+                if viewModel.expenses.isEmpty {
+                    Spacer()
+                    Text("No extra expenses added yet.")
+                        .foregroundColor(.gray)
+                        .padding()
+                    Spacer()
+                } else {
+                    List {
+                        ForEach(viewModel.expenses) { expense in
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(expense.expenseName)
+                                        .font(.headline)
+                                    Text("By \(expense.personName)")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text("LKR \(expense.amount, specifier: "%.2f")")
+                                    .fontWeight(.bold)
+                            }
+                            .swipeActions(edge: .trailing) {
+                                Button {
+                                    selectedExpense = expense
+                                    showForm = true
+                                } label: {
+                                    Label("Edit", systemImage: "pencil")
+                                }
+                                .tint(.orange)
+
+                                Button(role: .destructive) {
+                                    viewModel.delete(expense)
+                                } label: {
+                                    Label("Delete", systemImage: "trash")
+                                }
+                            }
                         }
                     }
                 }
-                .listStyle(PlainListStyle())
             }
             .navigationTitle("Extra Expenses")
-            .sheet(isPresented: $showAddExpense) {
-                AddExtraExpenseView(viewModel: viewModel)
-            }
-            .sheet(item: $selectedExpense) { expense in
-                AddExtraExpenseView(viewModel: viewModel, existingExpense: expense)
+            .sheet(isPresented: $showForm) {
+                ExtraExpenseFormView(viewModel: viewModel, existingExpense: $selectedExpense)
             }
         }
     }

@@ -7,6 +7,9 @@ struct SignInView: View {
     @State private var password = ""
     @State private var isPasswordVisible = false
 
+    @State private var showErrorAlert = false
+    @State private var errorMessage = ""
+
     var isFormValid: Bool {
         return !email.isEmpty && !password.isEmpty
     }
@@ -55,9 +58,15 @@ struct SignInView: View {
                 .shadow(color: .gray.opacity(0.2), radius: 10)
                 .padding(.horizontal)
 
-                // Sign In Button
                 Button(action: {
-                    isSignedIn = true
+                    AuthenticationManager.shared.authenticate { success, authError in
+                        if success {
+                            isSignedIn = true
+                        } else {
+                            errorMessage = authError ?? "Authentication failed"
+                            showErrorAlert = true
+                        }
+                    }
                 }) {
                     Text("Sign In")
                         .font(.headline)
@@ -69,6 +78,9 @@ struct SignInView: View {
                 }
                 .disabled(!isFormValid)
                 .padding(.horizontal)
+                .alert(isPresented: $showErrorAlert) {
+                    Alert(title: Text("Error"), message: Text(errorMessage), dismissButton: .default(Text("OK")))
+                }
 
                 // Social Buttons
                 VStack(spacing: 10) {

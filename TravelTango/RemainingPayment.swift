@@ -3,8 +3,8 @@ import Foundation
 enum PaymentType: String, CaseIterable, Identifiable, Codable {
     case sending = "Sending"
     case receiving = "Receiving"
-    
-    var id: String { rawValue }
+
+    var id: String { self.rawValue }
 }
 
 struct RemainingPayment: Identifiable, Hashable {
@@ -14,13 +14,4 @@ struct RemainingPayment: Identifiable, Hashable {
     var personName: String
     var amount: Double
     var type: PaymentType
-
-    init(id: UUID = UUID(), date: Date, expenseName: String, personName: String, amount: Double, type: PaymentType) {
-        self.id = id
-        self.date = date
-        self.expenseName = expenseName
-        self.personName = personName
-        self.amount = amount
-        self.type = type
-    }
 }

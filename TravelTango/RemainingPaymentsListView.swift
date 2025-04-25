@@ -1,57 +1,51 @@
 import SwiftUI
 
 struct RemainingPaymentsListView: View {
-    @StateObject private var viewModel = RemainingPaymentsViewModel()
-    @State private var showForm = false
-    @State private var selectedPayment: RemainingPayment?
+    @EnvironmentObject var viewModel: RemainingPaymentsViewModel
 
-    // Reminder Alert State
-    @State private var showReminder = false
-    @State private var reminderMessage = ""
+    @State private var navigateToForm = false
+    @State private var selectedPayment: RemainingPayment?
 
     var body: some View {
         VStack(spacing: 16) {
-            Text("Remaining Payments")
-                .font(.title.bold())
-                .padding(.top)
-
-            HStack {
-                SummaryBox(title: "To Give", amount: viewModel.totalToGive, color: .yellow)
-                SummaryBox(title: "To Receive", amount: viewModel.totalToReceive, color: .green)
+            // Amount To Send
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Amount to Give Others")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text("LKR \(String(format: "%.2f", viewModel.totalToSend))")
+                    .font(.title3.bold())
+                    .foregroundColor(.yellow)
+                ProgressView(value: viewModel.sendProgress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: .yellow))
+                    .animation(.easeInOut, value: viewModel.totalToSend)
             }
+            .padding()
+            .background(Color.yellow.opacity(0.1))
+            .cornerRadius(12)
             .padding(.horizontal)
 
-            List {
-                ForEach(viewModel.payments) { payment in
-                    VStack(alignment: .leading) {
-                        Text("\(payment.expenseName) - LKR \(String(format: "%.2f", payment.amount))")
-                            .font(.headline)
-                        Text("\(payment.type.rawValue) | \(payment.personName)")
-                        Text("Date: \(payment.date.formatted(date: .abbreviated, time: .omitted))")
-                            .font(.caption)
-                            .foregroundColor(.gray)
-                    }
-                    .swipeActions {
-                        Button(role: .destructive) {
-                            viewModel.delete(payment)
-                        } label: {
-                            Label("Delete", systemImage: "trash")
-                        }
-
-                        Button {
-                            selectedPayment = payment
-                            showForm = true
-                        } label: {
-                            Label("Edit", systemImage: "pencil")
-                        }
-                        .tint(.orange)
-                    }
-                }
+            //  Amount To Receive
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Amount to Receive")
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text("LKR \(String(format: "%.2f", viewModel.totalToReceive))")
+                    .font(.title3.bold())
+                    .foregroundColor(.green)
+                ProgressView(value: viewModel.receiveProgress)
+                    .progressViewStyle(LinearProgressViewStyle(tint: .green))
+                    .animation(.easeInOut, value: viewModel.totalToReceive)
             }
+            .padding()
+            .background(Color.green.opacity(0.1))
+            .cornerRadius(12)
+            .padding(.horizontal)
 
-            Button("Add New") {
+            //  Add New
+            Button("➕ Add New") {
                 selectedPayment = nil
-                showForm = true
+                navigateToForm = true
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -59,50 +53,58 @@ struct RemainingPaymentsListView: View {
             .foregroundColor(.white)
             .cornerRadius(10)
             .padding(.horizontal)
-        }
-        .onAppear {
-            checkForUpcomingReminders()
-        }
-        .alert("Reminder", isPresented: $showReminder) {
-            Button("OK", role: .cancel) {}
-        } message: {
-            Text(reminderMessage)
-        }
-        .sheet(isPresented: $showForm) {
-            RemainingPaymentFormView(viewModel: viewModel, existingPayment: $selectedPayment)
-        }
-    }
 
-    func checkForUpcomingReminders() {
-        let today = Calendar.current.startOfDay(for: Date())
+            // List
+            if viewModel.payments.isEmpty {
+                Spacer()
+                Text("No payments added yet.")
+                    .foregroundColor(.gray)
+                Spacer()
+            } else {
+                List {
+                    ForEach(viewModel.payments) { payment in
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(payment.expenseName)
+                                .font(.headline)
+                            Text("\(payment.type.rawValue) - \(payment.personName)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Text("LKR \(String(format: "%.2f", payment.amount))")
+                            Text(payment.date.formatted(date: .abbreviated, time: .omitted))
+                                .font(.caption)
+                                .foregroundColor(.gray)
+                        }
+                        .swipeActions {
+                            Button {
+                                selectedPayment = payment
+                                navigateToForm = true
+                            } label: {
+                                Label("Edit", systemImage: "pencil")
+                            }
+                            .tint(.orange)
 
-        for payment in viewModel.payments {
-            let paymentDate = Calendar.current.startOfDay(for: payment.date)
-            if let daysDiff = Calendar.current.dateComponents([.day], from: today, to: paymentDate).day,
-               daysDiff == 4 {
-                reminderMessage = "\(payment.personName) – You have to \(payment.type.rawValue.lowercased()) LKR \(String(format: "%.2f", payment.amount)) in 4 days."
-                showReminder = true
-                break
+                            Button(role: .destructive) {
+                                viewModel.delete(payment)
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
+                        }
+                    }
+                }
             }
-        }
-    }
-}
 
-struct SummaryBox: View {
-    let title: String
-    let amount: Double
-    let color: Color
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.subheadline)
-            Text("LKR \(String(format: "%.2f", amount))")
-                .font(.title3.bold())
+            Spacer()
         }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(color.opacity(0.2))
-        .cornerRadius(10)
+        .navigationTitle("Remaining Payments")
+        .navigationBarTitleDisplayMode(.inline)
+        .background(
+            NavigationLink(
+                destination: AddRemainingPaymentFormView(viewModel: viewModel, existingPayment: $selectedPayment),
+                isActive: $navigateToForm
+            ) {
+                EmptyView()
+            }
+            .hidden()
+        )
     }
 }

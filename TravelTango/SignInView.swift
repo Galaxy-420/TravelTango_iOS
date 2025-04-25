@@ -7,10 +7,6 @@ struct SignInView: View {
     @State private var password = ""
     @State private var isPasswordVisible = false
 
-    @State private var showToast = false
-    @State private var toastMessage = ""
-    @State private var isSuccess = false
-
     var isFormValid: Bool {
         return !email.isEmpty && !password.isEmpty
     }
@@ -20,7 +16,6 @@ struct SignInView: View {
             VStack(spacing: 20) {
                 Spacer()
 
-                // Logo
                 Image(systemName: "airplane.circle.fill")
                     .resizable()
                     .scaledToFit()
@@ -28,7 +23,6 @@ struct SignInView: View {
                     .foregroundColor(.travelTangoBlue)
                     .padding(.bottom, 10)
 
-                // Title
                 Text("Sign In")
                     .font(.largeTitle)
                     .fontWeight(.bold)
@@ -54,16 +48,6 @@ struct SignInView: View {
                         }
                     }
                     .textFieldStyle(.roundedBorder)
-
-                    HStack {
-                        Spacer()
-                        NavigationLink(destination: ForgotPasswordRequestView()) {
-                            Text("Forgot Password?")
-                                .font(.subheadline)
-                                .foregroundColor(.blue)
-                        }
-                        .padding(.trailing, 30)
-                    }
                 }
                 .padding()
                 .background(Color.white)
@@ -72,7 +56,9 @@ struct SignInView: View {
                 .padding(.horizontal)
 
                 // Sign In Button
-                Button(action: signIn) {
+                Button(action: {
+                    isSignedIn = true
+                }) {
                     Text("Sign In")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -80,14 +66,41 @@ struct SignInView: View {
                         .frame(maxWidth: .infinity)
                         .background(isFormValid ? Color.travelTangoBlue : Color.gray)
                         .cornerRadius(12)
-                        .padding(.horizontal)
                 }
                 .disabled(!isFormValid)
+                .padding(.horizontal)
 
-                // Social Sign-in Buttons
+                // Social Buttons
                 VStack(spacing: 10) {
-                    SocialLoginButton(imageName: "globe", text: "Sign In with Google", backgroundColor: .white, foregroundColor: .black)
-                    SocialLoginButton(imageName: "applelogo", text: "Sign In with Apple", backgroundColor: .black, foregroundColor: .white)
+                    Button(action: {}) {
+                        HStack {
+                            Image(systemName: "globe")
+                                .foregroundColor(.black)
+                            Text("Sign In with Google")
+                                .foregroundColor(.black)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        .shadow(radius: 4)
+                    }
+                    .padding(.horizontal)
+
+                    Button(action: {}) {
+                        HStack {
+                            Image(systemName: "applelogo")
+                                .foregroundColor(.white)
+                            Text("Sign In with Apple")
+                                .foregroundColor(.white)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.black)
+                        .cornerRadius(12)
+                        .shadow(radius: 4)
+                    }
+                    .padding(.horizontal)
                 }
 
                 // Sign Up Prompt
@@ -107,58 +120,6 @@ struct SignInView: View {
             .padding(.top)
             .background(Color(UIColor.systemGroupedBackground))
             .ignoresSafeArea()
-            .overlay(
-                Group {
-                    if showToast {
-                        VStack {
-                            Spacer()
-                            Text(toastMessage)
-                                .padding()
-                                .background(isSuccess ? Color.green.opacity(0.9) : Color.red.opacity(0.9))
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
-                                .padding(.bottom, 50)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
-                        }
-                    }
-                }
-            )
-        }
-    }
-
-    func signIn() {
-        // Always allow sign-in with valid input
-        if isFormValid {
-            isSignedIn = true
-            showSuccess("Signed in successfully!")
-        } else {
-            showError("Please fill in all fields.")
-        }
-    }
-
-    func showError(_ message: String) {
-        DispatchQueue.main.async {
-            toastMessage = message
-            isSuccess = false
-            showToast = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                withAnimation {
-                    showToast = false
-                }
-            }
-        }
-    }
-
-    func showSuccess(_ message: String) {
-        DispatchQueue.main.async {
-            toastMessage = message
-            isSuccess = true
-            showToast = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                withAnimation {
-                    showToast = false
-                }
-            }
         }
     }
 }

@@ -1,22 +1,16 @@
-//
-//  AuthenticationView.swift
-//  TravelTango
-//
-//  Created by Nimeshika Mandakini on 2025-04-25.
-//
 import SwiftUI
 
 struct AuthenticationView: View {
     @ObservedObject var authViewModel: AuthenticationViewModel
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 30) {
             Image(systemName: "faceid")
                 .resizable()
                 .frame(width: 100, height: 100)
                 .foregroundColor(.blue)
 
-            Text("Authenticate to Access TravelTango")
+            Text("Unlock with Face ID")
                 .font(.title2)
                 .multilineTextAlignment(.center)
 
@@ -24,18 +18,23 @@ struct AuthenticationView: View {
                 Text(error)
                     .foregroundColor(.red)
                     .multilineTextAlignment(.center)
+                    .padding()
             }
 
-            Button("Authenticate Now") {
-                authViewModel.authenticateUser()
+            Button("Authenticate") {
+                authViewModel.authenticate()
             }
+            .font(.headline)
             .padding()
+            .frame(maxWidth: .infinity)
             .background(Color.blue)
             .foregroundColor(.white)
             .cornerRadius(12)
+            .padding(.horizontal)
+        }
+        .onAppear {
+            authViewModel.authenticate()
         }
         .padding()
     }
 }
-
-

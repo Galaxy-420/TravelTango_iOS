@@ -1,37 +1,32 @@
-//
-//  AuthenticationManager.swift
-//  TravelTango
-//
-//  Created by Nimeshika Mandakini on 2025-04-25.
-//
 import Foundation
 import LocalAuthentication
 
 class AuthenticationManager {
     static let shared = AuthenticationManager()
 
-    func authenticateWithBiometrics(completion: @escaping (Bool, String?) -> Void) {
+    func authenticate(completion: @escaping (Bool, String?) -> Void) {
         let context = LAContext()
         var error: NSError?
 
-        // Check if biometric auth is available
+        // Force Face ID only, if available
+        context.localizedCancelTitle = "Cancel"
+
         if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
-            let reason = "Please authenticate to continue"
+            let reason = "Authenticate with Face ID to unlock TravelTango"
 
             context.evaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, localizedReason: reason) { success, authenticationError in
                 DispatchQueue.main.async {
                     if success {
                         completion(true, nil)
                     } else {
-                        let message = authenticationError?.localizedDescription ?? "Failed to authenticate"
-                        completion(false, message)
+                        completion(false, authenticationError?.localizedDescription ?? "Authentication Failed")
                     }
                 }
             }
         } else {
-            let message = error?.localizedDescription ?? "Biometric authentication not available"
-            completion(false, message)
+            DispatchQueue.main.async {
+                completion(false, error?.localizedDescription ?? "Biometric Authentication not available")
+            }
         }
     }
 }
-

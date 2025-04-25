@@ -3,6 +3,10 @@ import Foundation
 class TripExpensesViewModel: ObservableObject {
     @Published var expenses: [TripExpense] = []
 
+    var totalAmount: Double {
+        expenses.reduce(0) { $0 + $1.amount }
+    }
+
     func add(_ expense: TripExpense) {
         expenses.append(expense)
     }
@@ -15,9 +19,5 @@ class TripExpensesViewModel: ObservableObject {
 
     func delete(_ expense: TripExpense) {
         expenses.removeAll { $0.id == expense.id }
-    }
-
-    var totalTripExpenses: Double {
-        expenses.reduce(0) { $0 + $1.amount }
     }
 }

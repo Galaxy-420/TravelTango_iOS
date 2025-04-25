@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import GoogleMaps
 
 struct DashboardView: View {
     @EnvironmentObject var tripManager: TripManager
@@ -17,8 +18,6 @@ struct DashboardView: View {
     @State private var selectedVRLocation: TripLocation1? = nil
     @State private var isLoadingVR = true
 
-    
-
     var body: some View {
         ZStack(alignment: .top) {
             let pins = tripManager.currentTrip?.locations ?? []
@@ -28,6 +27,7 @@ struct DashboardView: View {
                     Button(action: {
                         selectedVRLocation = location
                         showingVRView = true
+                        isLoadingVR = true // Reset loading state
                     }) {
                         Circle()
                             .fill(Color.red)
@@ -128,7 +128,9 @@ struct DashboardView: View {
         // VR View when tapping red pin
         .sheet(isPresented: $showingVRView) {
             ZStack {
-                Web360View(isLoading: $isLoadingVR)
+                if let location = selectedVRLocation {
+                    GooglePanoramaView(coordinate: CLLocationCoordinate2D(latitude: location.coordinate.latitude, longitude: location.coordinate.longitude))
+                }
 
                 if isLoadingVR {
                     VStack {
@@ -139,9 +141,10 @@ struct DashboardView: View {
                     }
                 }
             }
+            .onAppear {
+                isLoadingVR = false // Set loading state to false once the PanoramaView appears
+            }
         }
-
-
 
         // Navigation bar config
         .navigationTitle(tripManager.currentTrip?.name ?? "Dashboard")
@@ -152,5 +155,19 @@ struct DashboardView: View {
                 showingFirstTripScreen = true
             }
         }
+    }
+}
+
+struct GooglePanoramaView: UIViewRepresentable {
+    let coordinate: CLLocationCoordinate2D
+
+    func makeUIView(context: Context) -> GMSPanoramaView {
+        let panoramaView = GMSPanoramaView(frame: .zero)
+        panoramaView.moveNearCoordinate(coordinate)
+        return panoramaView
+    }
+
+    func updateUIView(_ uiView: GMSPanoramaView, context: Context) {
+        uiView.moveNearCoordinate(coordinate)
     }
 }

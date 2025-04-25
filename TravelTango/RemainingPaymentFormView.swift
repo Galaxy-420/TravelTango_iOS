@@ -1,9 +1,3 @@
-//
-//  RemainingPaymentFormView.swift
-//  TravelTango
-//
-//  Created by Nimeshika Mandakini on 2025-04-25.
-//
 import SwiftUI
 
 struct RemainingPaymentFormView: View {
@@ -15,58 +9,71 @@ struct RemainingPaymentFormView: View {
     @State private var date = Date()
     @State private var expenseName = ""
     @State private var personName = ""
+    @State private var customPersonName = ""
     @State private var amount = ""
-    @State private var type: PaymentType = .sending
+    @State private var paymentType: PaymentType = .sending
 
     let sampleTeamMembers = ["Nimal", "Kamal", "Saman", "Custom"]
+
+    var isUsingCustomName: Bool {
+        personName == "Custom"
+    }
+
+    var finalPersonName: String {
+        isUsingCustomName ? customPersonName : personName
+    }
 
     var body: some View {
         NavigationStack {
             Form {
-                DatePicker("Date", selection: $date, displayedComponents: .date)
+                Section(header: Text("Payment Details")) {
+                    DatePicker("Date", selection: $date, displayedComponents: .date)
 
-                TextField("Expense Name", text: $expenseName)
+                    TextField("Expense Name", text: $expenseName)
 
-                Picker("Payment Type", selection: $type) {
-                    ForEach(PaymentType.allCases) { value in
-                        Text(value.rawValue).tag(value)
+                    Picker("Payment Type", selection: $paymentType) {
+                        ForEach(PaymentType.allCases, id: \.self) { type in
+                            Text(type.rawValue.capitalized).tag(type)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
+                    .pickerStyle(.segmented)
 
-                Picker("Select Member", selection: $personName) {
-                    ForEach(sampleTeamMembers, id: \.self) { member in
-                        Text(member)
+                    Picker("Select Member", selection: $personName) {
+                        ForEach(sampleTeamMembers, id: \.self) { member in
+                            Text(member).tag(member)
+                        }
                     }
-                }
 
-                if personName == "Custom" {
-                    TextField("Custom Name", text: $personName)
-                }
+                    if isUsingCustomName {
+                        TextField("Custom Name", text: $customPersonName)
+                    }
 
-                TextField("Amount (LKR)", text: $amount)
-                    .keyboardType(.decimalPad)
+                    TextField("Amount (LKR)", text: $amount)
+                        .keyboardType(.decimalPad)
+                }
             }
             .navigationTitle(existingPayment == nil ? "Add Payment" : "Edit Payment")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let payment = RemainingPayment(
+                        let newPayment = RemainingPayment(
                             id: existingPayment?.id ?? UUID(),
                             date: date,
                             expenseName: expenseName,
-                            personName: personName,
+                            personName: finalPersonName,
                             amount: Double(amount) ?? 0,
-                            type: type
+                            type: paymentType //
                         )
 
                         if existingPayment != nil {
-                            viewModel.update(payment)
+                            viewModel.update(newPayment)
                         } else {
-                            viewModel.add(payment)
+                            viewModel.add(newPayment)
                         }
                         dismiss()
                     }
+                    .disabled(expenseName.isEmpty || finalPersonName.isEmpty || amount.isEmpty)
                 }
 
                 ToolbarItem(placement: .cancellationAction) {
@@ -79,12 +86,12 @@ struct RemainingPaymentFormView: View {
                 if let payment = existingPayment {
                     date = payment.date
                     expenseName = payment.expenseName
-                    personName = payment.personName
+                    personName = sampleTeamMembers.contains(payment.personName) ? payment.personName : "Custom"
+                    customPersonName = payment.personName
                     amount = String(format: "%.2f", payment.amount)
-                    type = payment.type
+                    paymentType = payment.type // 
                 }
             }
         }
     }
 }
-

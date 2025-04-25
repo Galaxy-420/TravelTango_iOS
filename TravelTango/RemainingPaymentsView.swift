@@ -8,12 +8,14 @@ struct RemainingPaymentsView: View {
     var body: some View {
         NavigationStack {
             VStack(spacing: 10) {
+                // Summary Boxes
                 HStack(spacing: 16) {
-                    SummaryCard(title: "To Send", amount: viewModel.totalToGive, color: .yellow)
+                    SummaryCard(title: "To Send", amount: viewModel.totalToSend, color: .yellow)
                     SummaryCard(title: "To Receive", amount: viewModel.totalToReceive, color: .green)
                 }
                 .padding()
 
+                // Add New Button
                 Button("➕ Add Remaining Payment") {
                     selectedPayment = nil
                     showForm = true
@@ -25,6 +27,7 @@ struct RemainingPaymentsView: View {
                 .cornerRadius(10)
                 .padding(.horizontal)
 
+                // List of Payments
                 if viewModel.payments.isEmpty {
                     Spacer()
                     Text("No remaining payments added yet.")
@@ -37,7 +40,7 @@ struct RemainingPaymentsView: View {
                                 VStack(alignment: .leading) {
                                     Text(payment.expenseName)
                                         .font(.headline)
-                                    Text("\(payment.type.rawValue) - \(payment.personName)")
+                                    Text("\(payment.type.rawValue.capitalized) • \(payment.personName)") // ✅ FIXED
                                         .font(.subheadline)
                                         .foregroundColor(.secondary)
                                 }
@@ -65,8 +68,9 @@ struct RemainingPaymentsView: View {
                 }
             }
             .navigationTitle("Remaining Payments")
+            .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $showForm) {
-                RemainingPaymentFormView(viewModel: viewModel, existingPayment: $selectedPayment)
+                RemainingPaymentFormView(viewModel: viewModel, existingPayment: $selectedPayment) // ✅ FIXED
             }
         }
     }

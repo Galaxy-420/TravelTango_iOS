@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0D4994112DC14C070071BF72 /* FirebaseStorage in Frameworks */ = {isa = PBXBuildFile; productRef = 0D4994102DC14C070071BF72 /* FirebaseStorage */; };
 		BA235B572DBBCEC700EBA628 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BA235B562DBBCEC700EBA628 /* GoogleSignIn */; };
 		BA235B592DBBCEC700EBA628 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = BA235B582DBBCEC700EBA628 /* GoogleSignInSwift */; };
 		BA235B5B2DBBCEE400EBA628 /* FirebaseAnalytics in Frameworks */ = {isa = PBXBuildFile; productRef = BA235B5A2DBBCEE400EBA628 /* FirebaseAnalytics */; };
@@ -92,6 +93,7 @@
 				BA235B592DBBCEC700EBA628 /* GoogleSignInSwift in Frameworks */,
 				BA235B5B2DBBCEE400EBA628 /* FirebaseAnalytics in Frameworks */,
 				BA235B6D2DBBD72000EBA628 /* FirebaseAuth in Frameworks */,
+				0D4994112DC14C070071BF72 /* FirebaseStorage in Frameworks */,
 				BA235B742DBBDEA300EBA628 /* GoogleMaps in Frameworks */,
 				BA235B712DBBD74F00EBA628 /* FirebaseFirestore in Frameworks */,
 			);
@@ -171,6 +173,7 @@
 				BA235B6E2DBBD74F00EBA628 /* FirebaseDatabase */,
 				BA235B702DBBD74F00EBA628 /* FirebaseFirestore */,
 				BA235B732DBBDEA300EBA628 /* GoogleMaps */,
+				0D4994102DC14C070071BF72 /* FirebaseStorage */,
 			);
 			productName = TravelTango;
 			productReference = 18D473142DA93683005479EA /* TravelTango.app */;
@@ -653,6 +656,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		0D4994102DC14C070071BF72 /* FirebaseStorage */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = BA235B522DBBCDA100EBA628 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseStorage;
+		};
 		BA235B562DBBCEC700EBA628 /* GoogleSignIn */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = BA235B552DBBCEB200EBA628 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;

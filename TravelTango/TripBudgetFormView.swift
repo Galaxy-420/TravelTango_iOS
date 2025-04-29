@@ -1,4 +1,6 @@
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct TripBudgetFormView: View {
     @ObservedObject var viewModel: TripBudgetViewModel
@@ -11,6 +13,8 @@ struct TripBudgetFormView: View {
     @State private var personName = ""
     @State private var amount = ""
     @State private var category = ""
+
+    private let db = Firestore.firestore()
 
     var body: some View {
         NavigationStack {
@@ -29,22 +33,7 @@ struct TripBudgetFormView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        let newBudget = TripBudget(
-                            id: existingBudget?.id ?? UUID(),
-                            date: date,
-                            budgetName: budgetName,
-                            personName: personName,
-                            amount: Double(amount) ?? 0,
-                            category: category
-                        )
-
-                        if existingBudget != nil {
-                            viewModel.update(newBudget)
-                        } else {
-                            viewModel.add(newBudget)
-                        }
-
-                        dismiss()
+                        saveBudget()
                     }
                     .disabled(budgetName.isEmpty || personName.isEmpty || amount.isEmpty || category.isEmpty)
                 }
@@ -65,5 +54,49 @@ struct TripBudgetFormView: View {
                 }
             }
         }
+    }
+
+    private func saveBudget() {
+        guard let loggerId = Auth.auth().currentUser?.uid else {
+            print("No logged-in user ID found.")
+            return
+        }
+
+        let newBudget = TripBudget(
+            id: existingBudget?.id ?? UUID(),
+            date: date,
+            budgetName: budgetName,
+            personName: personName,
+            amount: Double(amount) ?? 0,
+            category: category
+        )
+
+        // Update the local view model
+        if existingBudget != nil {
+            viewModel.update(newBudget)
+        } else {
+            viewModel.add(newBudget)
+        }
+
+        // Prepare Firestore data
+        let budgetData: [String: Any] = [
+            "id": newBudget.id.uuidString,
+            "date": Timestamp(date: date),
+            "budgetName": budgetName,
+            "personName": personName,
+            "amount": Double(amount) ?? 0,
+            "category": category,
+            "loggerId": loggerId
+        ]
+
+        db.collection("tripBudgets").document(newBudget.id.uuidString).setData(budgetData) { error in
+            if let error = error {
+                print("Error saving budget to Firestore: \(error.localizedDescription)")
+            } else {
+                print("Budget successfully saved to Firestore.")
+            }
+        }
+
+        dismiss()
     }
 }

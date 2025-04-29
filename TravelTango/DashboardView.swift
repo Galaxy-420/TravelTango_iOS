@@ -92,17 +92,25 @@ struct DashboardView: View {
         }
 
         // Add Stops Sheet
-        .sheet(isPresented: $showingAddStopsSheet) {
+        .sheet(isPresented: $showingAddStopsSheet, onDismiss: {
+            // Save updates after dismissing Add Stops
+            if let currentTrip = tripManager.currentTrip {
+                tripManager.updateTrip(
+                    id: currentTrip.id,
+                    name: currentTrip.name,
+                    locations: currentTrip.locations
+                )
+            }
+        }) {
             if let currentTrip = tripManager.currentTrip {
                 BottomSheetAddStopsView(selectedLocations:
                     Binding(
                         get: { currentTrip.locations },
                         set: { newLocations in
-                            tripManager.updateTrip(
-                                id: currentTrip.id,
-                                name: currentTrip.name,
-                                locations: newLocations
-                            )
+                            if let index = tripManager.trips.firstIndex(where: { $0.id == currentTrip.id }) {
+                                tripManager.trips[index].locations = newLocations
+                                tripManager.currentTrip = tripManager.trips[index]
+                            }
                         }
                     )
                 )
@@ -142,7 +150,7 @@ struct DashboardView: View {
                 }
             }
             .onAppear {
-                isLoadingVR = false // Set loading state to false once the PanoramaView appears
+                isLoadingVR = false
             }
         }
 
@@ -150,6 +158,7 @@ struct DashboardView: View {
         .navigationTitle(tripManager.currentTrip?.name ?? "Dashboard")
         .navigationBarTitleDisplayMode(.inline)
 
+        // Handle first time opening if no trips
         .onAppear {
             if tripManager.trips.isEmpty && tripManager.currentTrip == nil {
                 showingFirstTripScreen = true

@@ -1,10 +1,6 @@
-//
-//  AddExtraExpenseFormView.swift
-//  TravelTango
-//
-//  Created by Nimeshika Mandakini on 2025-04-25.
-//
 import SwiftUI
+import FirebaseFirestore
+import FirebaseAuth
 
 struct AddExtraExpenseFormView: View {
     @ObservedObject var viewModel: ExtraExpensesViewModel
@@ -16,6 +12,8 @@ struct AddExtraExpenseFormView: View {
     @State private var expenseName = ""
     @State private var personName = ""
     @State private var amount = ""
+
+    private let db = Firestore.firestore()
 
     var body: some View {
         Form {
@@ -31,21 +29,7 @@ struct AddExtraExpenseFormView: View {
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
-                    let newExpense = ExtraExpense(
-                        id: existingExpense?.id ?? UUID(),
-                        date: date,
-                        expenseName: expenseName,
-                        personName: personName,
-                        amount: Double(amount) ?? 0
-                    )
-
-                    if existingExpense != nil {
-                        viewModel.update(newExpense)
-                    } else {
-                        viewModel.add(newExpense)
-                    }
-
-                    dismiss()
+                    saveExtraExpense()
                 }
                 .disabled(expenseName.isEmpty || personName.isEmpty || amount.isEmpty)
             }
@@ -65,5 +49,46 @@ struct AddExtraExpenseFormView: View {
             }
         }
     }
-}
 
+    private func saveExtraExpense() {
+        guard let loggerId = Auth.auth().currentUser?.uid else {
+            print("No logged-in user ID found.")
+            return
+        }
+
+        let newExpense = ExtraExpense(
+            id: existingExpense?.id ?? UUID(),
+            date: date,
+            expenseName: expenseName,
+            personName: personName,
+            amount: Double(amount) ?? 0
+        )
+
+        // Update local ViewModel
+        if existingExpense != nil {
+            viewModel.update(newExpense)
+        } else {
+            viewModel.add(newExpense)
+        }
+
+        // Prepare Firestore data
+        let extraExpenseData: [String: Any] = [
+            "id": newExpense.id.uuidString,
+            "date": Timestamp(date: date),
+            "expenseName": expenseName,
+            "personName": personName,
+            "amount": Double(amount) ?? 0,
+            "loggerId": loggerId
+        ]
+
+        db.collection("extraExpenses").document(newExpense.id.uuidString).setData(extraExpenseData) { error in
+            if let error = error {
+                print("Error saving extra expense to Firestore: \(error.localizedDescription)")
+            } else {
+                print("Extra expense successfully saved to Firestore.")
+            }
+        }
+
+        dismiss()
+    }
+}

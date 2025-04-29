@@ -2,13 +2,11 @@ import SwiftUI
 import PhotosUI
 
 struct UserProfileView: View {
-    @State private var name = "John Doe"
-    @State private var email = "johndoe@email.com"
-    @State private var profileImage: UIImage? = nil
+    @EnvironmentObject var tripManager: TripManager
+    @StateObject private var userManager = UserManager.shared
+
     @State private var isShowingPhotoPicker = false
-    @State private var showEditProfile = false
-    @State private var showSettings = false
-    @State private var showActiveTrips = false
+    @State private var selectedPhotoItem: PhotosPickerItem? = nil
     @State private var notificationsEnabled = true
 
     var body: some View {
@@ -16,7 +14,7 @@ struct UserProfileView: View {
             List {
                 // MARK: - Profile Section
                 VStack(spacing: 12) {
-                    if let image = profileImage {
+                    if let image = userManager.profileImage {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
@@ -39,9 +37,9 @@ struct UserProfileView: View {
                             }
                     }
 
-                    Text(name)
+                    Text(userManager.name)
                         .font(.headline)
-                    Text(email)
+                    Text(userManager.email)
                         .font(.subheadline)
                         .foregroundColor(.gray)
                 }
@@ -51,7 +49,7 @@ struct UserProfileView: View {
 
                 // MARK: - Main Options
                 Section {
-                    NavigationLink(destination: EditProfileView(name: $name, email: $email)) {
+                    NavigationLink(destination: EditProfileView(name: $userManager.name, email: $userManager.email)) {
                         Text("My Profile")
                     }
 
@@ -61,11 +59,11 @@ struct UserProfileView: View {
 
                     Toggle("Notifications", isOn: $notificationsEnabled)
 
-                    NavigationLink(destination: ActiveTripsView()) {
+                    NavigationLink(destination: ActiveTripsView().environmentObject(tripManager)) {
                         HStack {
                             Text("Active Trips")
                             Spacer()
-                            Text("Kandy Trip") // you can bind to tripManager.currentTrip?.name
+                            Text(tripManager.currentTrip?.name ?? "None")
                                 .foregroundColor(.gray)
                         }
                     }
@@ -74,7 +72,7 @@ struct UserProfileView: View {
                 // MARK: - Logout
                 Section {
                     Button("Log Out", role: .destructive) {
-                        exit(0) // Force closes the app (can replace with proper logout later)
+                        logout()
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -82,10 +80,33 @@ struct UserProfileView: View {
             .navigationTitle("Profile")
             .photosPicker(
                 isPresented: $isShowingPhotoPicker,
-                selection: .constant(nil),
-                matching: .images,
-                photoLibrary: .shared()
+                selection: $selectedPhotoItem,
+                matching: .images
             )
+            .onChange(of: selectedPhotoItem) { newItem in
+                if let item = newItem {
+                    loadImage(from: item)
+                }
+            }
+            .onAppear {
+                userManager.loadUserDetails()
+            }
         }
+    }
+
+    private func loadImage(from item: PhotosPickerItem) {
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let uiImage = UIImage(data: data) {
+                userManager.profileImage = uiImage
+                // Optionally upload to Firebase Storage
+            }
+        }
+    }
+
+    private func logout() {
+        userManager.logout()
+        // Navigate back to LoginView here if you have navigation
+        print("Logged out from Firebase")
     }
 }

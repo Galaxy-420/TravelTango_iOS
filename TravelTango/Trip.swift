@@ -1,7 +1,7 @@
 import Foundation
 
 struct Trip: Identifiable, Equatable {
-    let id: UUID
+    let id: String
     var name: String
     var locations: [TripLocation1]
     var teamMembers: [TeamMember]
@@ -9,7 +9,7 @@ struct Trip: Identifiable, Equatable {
 
     // Default initializer
     init(
-        id: UUID = UUID(),
+        id: String = UUID().uuidString,
         name: String,
         locations: [TripLocation1] = [],
         teamMembers: [TeamMember] = [],

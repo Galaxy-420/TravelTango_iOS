@@ -7,14 +7,13 @@ struct ActiveTripsView: View {
         NavigationStack {
             List {
                 Section(header: Text("Your Trips")) {
-                    ForEach(tripManager.trips) { trip in
+                    ForEach(tripManager.trips, id: \.id) { trip in
                         HStack {
                             Text(trip.name)
                                 .fontWeight(tripManager.currentTrip?.id == trip.id ? .bold : .regular)
 
                             Spacer()
 
-                            // ✅ Acts like a toggle to switch active trip
                             Button {
                                 tripManager.switchTrip(id: trip.id)
                             } label: {
@@ -31,8 +30,8 @@ struct ActiveTripsView: View {
                             }
 
                             Button {
+                                // Implement Edit functionality here
                                 print("Edit tapped for trip: \(trip.name)")
-                                // You can later show an edit screen here
                             } label: {
                                 Label("Edit", systemImage: "pencil")
                             }

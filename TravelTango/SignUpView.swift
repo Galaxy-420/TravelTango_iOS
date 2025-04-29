@@ -1,4 +1,7 @@
 import SwiftUI
+import Firebase
+import FirebaseAuth
+import FirebaseFirestore
 
 struct SignUpView: View {
     @State private var fullName = ""
@@ -11,13 +14,14 @@ struct SignUpView: View {
     @State private var showToast = false
     @State private var toastMessage = ""
     @State private var isSuccess = false
-    @State private var navigateToSignIn = false // 👈 Navigation flag
+    @State private var navigateToSignIn = false
 
     var isFormValid: Bool {
         !fullName.isEmpty &&
         !email.isEmpty &&
         !password.isEmpty &&
-        password == confirmPassword
+        password == confirmPassword &&
+        password.count >= 6 // Firebase requires at least 6 characters
     }
 
     var body: some View {
@@ -83,7 +87,7 @@ struct SignUpView: View {
                 .shadow(color: .gray.opacity(0.2), radius: 10)
                 .padding(.horizontal)
 
-                Button(action: register) {
+                Button(action: registerWithFirebase) {
                     Text("Sign Up")
                         .font(.headline)
                         .foregroundColor(.white)
@@ -113,7 +117,6 @@ struct SignUpView: View {
 
                 Spacer()
 
-                // 👇 Hidden NavigationLink for programmatic navigation
                 NavigationLink(destination: SignInView(isSignedIn: .constant(false)), isActive: $navigateToSignIn) {
                     EmptyView()
                 }
@@ -139,46 +142,38 @@ struct SignUpView: View {
         }
     }
 
-    func register() {
-        guard let url = URL(string: "http://localhost:5001/api/auth/register") else {
-            showError("Invalid URL")
-            return
-        }
-
-        let body: [String: String] = [
-            "fullName": fullName,
-            "email": email,
-            "password": password
-        ]
-
-        guard let jsonData = try? JSONEncoder().encode(body) else {
-            showError("Failed to encode data")
-            return
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.httpBody = jsonData
-
-        URLSession.shared.dataTask(with: request) { data, response, error in
+    func registerWithFirebase() {
+        // 1. Create the user account in Firebase Auth
+        Auth.auth().createUser(withEmail: email, password: password) { authResult, error in
             if let error = error {
-                showError("Request error: \(error.localizedDescription)")
+                showError("Registration failed: \(error.localizedDescription)")
                 return
             }
-
-            guard let httpResponse = response as? HTTPURLResponse else {
-                showError("No response from server")
+            
+            guard let user = authResult?.user else {
+                showError("Failed to get user information")
                 return
             }
-
-            if httpResponse.statusCode == 200 || httpResponse.statusCode == 201 {
+            
+            // 2. Store additional user data in Firestore
+            let userData: [String: Any] = [
+                "fullName": fullName,
+                "email": email,
+                "userId": user.uid,
+                "createdAt": Timestamp(date: Date())
+            ]
+            
+            // Save user info to Firestore
+            let db = Firestore.firestore()
+            db.collection("users").document(user.uid).setData(userData) { error in
+                if let error = error {
+                    showError("Failed to save user data: \(error.localizedDescription)")
+                    return
+                }
+                
                 showSuccess("Account created successfully!")
-            } else {
-                let statusCode = httpResponse.statusCode
-                showError("Failed to register (code: \(statusCode))")
             }
-        }.resume()
+        }
     }
 
     func showError(_ message: String) {
@@ -202,7 +197,7 @@ struct SignUpView: View {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 withAnimation {
                     showToast = false
-                    navigateToSignIn = true // 👈 Trigger navigation
+                    navigateToSignIn = true
                 }
             }
         }
